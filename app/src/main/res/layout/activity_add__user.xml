@@ -12,7 +12,7 @@
     tools:context="fr.p8.m2ise.androidfacecamrecog.Add_UserActivity">
 
     <Button
-        android:text="Accepter"
+        android:text="Prendre une photo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

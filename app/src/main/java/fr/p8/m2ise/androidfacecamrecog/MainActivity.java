@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity{
                 startActivity(i);
             }
         });
+
         Button bhisto = (Button) findViewById(R.id.button_readnotifications);
         bhisto.setOnClickListener(new View.OnClickListener() {
             @Override
