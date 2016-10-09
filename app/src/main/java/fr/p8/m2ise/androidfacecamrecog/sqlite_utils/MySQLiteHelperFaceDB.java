@@ -9,17 +9,19 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 
 public class MySQLiteHelperFaceDB extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 1;
 
+
+
+    private static final int DATABASE_VERSION = 1;
     // Database Name
     private static final String DATABASE_NAME = "FaceDB";
-
     // Books table name
     private static final String TABLE_BOOKS = "books";
 
+
     // Books Table Columns names
     private static final String KEY_ID = "id";
-private static final String KEY_NAME = "name";
+    private static final String KEY_NAME = "name";
     private static final String KEY_IMAGE = "image";
 
     private static final String[] COLUMNS = {KEY_ID,KEY_NAME,KEY_IMAGE};
@@ -28,7 +30,9 @@ private static final String KEY_NAME = "name";
 
     public MySQLiteHelperFaceDB(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        
     }
+
 
     @Override
     public void onCreate(SQLiteDatabase db) {
@@ -41,6 +45,8 @@ private static final String KEY_NAME = "name";
         // create books table
         db.execSQL(CREATE_FACE_TABLE);
     }
+
+
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {

@@ -18,7 +18,17 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="73dp"
-        android:id="@+id/add_button" />
+        android:id="@+id/button" />
+
+    <Button
+        android:text="Prendre une photo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="73dp"
+        android:id="@+id/add_button"
+        android:layout_alignTop="@+id/button" />
 
     <ImageView
         android:layout_width="wrap_content"
