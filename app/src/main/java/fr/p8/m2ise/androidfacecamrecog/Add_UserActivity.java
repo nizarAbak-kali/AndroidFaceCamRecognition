@@ -36,32 +36,12 @@ public class Add_UserActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dispatchTakePictureIntent();
+                Log.i("Button", "Onclick");
             }
         });
     }
 
-    private void dispatchTakePictureIntent(){
-        Intent takePic = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePic.resolveActivity(getPackageManager())!= null){
-            File photoFile = null;
-            try {
-                photoFile = createImageFile();
 
-            }catch (IOException e){
-                Log.e("ERROR", "dispatchTakePictureIntent: ",e.getCause());
-            }
-
-            if(photoFile != null) {
-                Uri photoUri = FileProvider.getUriForFile(this,
-                        "com.example.android.fileprovider",
-                        photoFile);
-
-                takePic.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-                startActivityForResult(takePic, REQUEST_IMAGE_CAPTURE);
-            }
-        }
-    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {

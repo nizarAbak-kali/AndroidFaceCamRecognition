@@ -34,7 +34,9 @@
         android:layout_marginTop="44dp"
         android:id="@+id/button_add_user"
         android:layout_below="@+id/textView"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:onClick="onClick"
+        android:clickable="true" />
 
     <Button
         android:text="Historique"
@@ -42,5 +44,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/button_readnotifications"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:onClick="onClick"
+        android:clickable="true" />
 </RelativeLayout>
