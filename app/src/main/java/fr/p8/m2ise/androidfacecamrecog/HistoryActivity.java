@@ -1,13 +1,67 @@
 package fr.p8.m2ise.androidfacecamrecog;
-
+import android.content.ContentValues;
+import android.content.Context;
+import android.net.Uri;
+import android.nfc.Tag;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.content.Context;
+import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.appindexing.Thing;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 public class HistoryActivity extends AppCompatActivity {
-    public class PostsDatabaseHelper extends SQLiteOpenHelper {
+
+
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
+
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    public Action getIndexApiAction() {
+        Thing object = new Thing.Builder()
+                .setName("History Page") // TODO: Define a title for the content shown.
+                // TODO: Make sure this auto-generated URL is correct.
+                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
+                .build();
+        return new Action.Builder(Action.TYPE_VIEW)
+                .setObject(object)
+                .setActionStatus(Action.STATUS_TYPE_COMPLETED)
+                .build();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        AppIndex.AppIndexApi.start(client, getIndexApiAction());
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        AppIndex.AppIndexApi.end(client, getIndexApiAction());
+        client.disconnect();
+    }
+
+    public static class PostsDatabaseHelper extends SQLiteOpenHelper {
         // Database Info
         private static final String DATABASE_NAME = "postsDatabase";
         private static final int DATABASE_VERSION = 1;
@@ -25,6 +79,19 @@ public class HistoryActivity extends AppCompatActivity {
         private static final String KEY_USER_ID = "id";
         private static final String KEY_USER_NAME = "userName";
         private static final String KEY_USER_PROFILE_PICTURE_URL = "profilePictureUrl";
+
+
+        private static PostsDatabaseHelper sInstance;
+
+        public static synchronized PostsDatabaseHelper getInstance(Context context) {
+            // Use the application context, which will ensure that you
+            // don't accidentally leak an Activity's context.
+            // See this article for more information: http://bit.ly/6LRzfx
+            if (sInstance == null) {
+                sInstance = new PostsDatabaseHelper(context.getApplicationContext());
+            }
+            return sInstance;
+        }
 
         public PostsDatabaseHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -72,10 +139,200 @@ public class HistoryActivity extends AppCompatActivity {
                 onCreate(db);
             }
         }
+
+        // Insert a post into the database
+        public void addPost(PostsDatabaseHelper post) {
+            // Create and/or open the database for writing
+            SQLiteDatabase db = getWritableDatabase();
+
+            // It's a good idea to wrap our insert in a transaction. This helps with performance and ensures
+            // consistency of the database.
+            db.beginTransaction();
+            try {
+                // The user might already exist in the database (i.e. the same user created multiple posts).
+                long userId = addOrUpdateUser(post.addOrUpdateUser());
+
+                db values = new ContentValues();
+                values.put(KEY_POST_USER_ID_FK, userId);
+                values.put(KEY_POST_TEXT, post.text);
+
+                // Notice how we haven't specified the primary key. SQLite auto increments the primary key column.
+                db.insertOrThrow(TABLE_POSTS, null, values);
+                db.setTransactionSuccessful();
+            } catch (Exception e) {
+                Log.d(Tag, "Error while trying to add post to database");
+            } finally {
+                db.endTransaction();
+            }
+        }
+
+        // Insert or update a user in the database
+        // Since SQLite doesn't support "upsert" we need to fall back on an attempt to UPDATE (in case the
+        // user already exists) optionally followed by an INSERT (in case the user does not already exist).
+        // Unfortunately, there is a bug with the insertOnConflict method
+        // (https://code.google.com/p/android/issues/detail?id=13045) so we need to fall back to the more
+        // verbose option of querying for the user's primary key if we did an update.
+        public long addOrUpdateUser(User user) {
+            // The database connection is cached so it's not expensive to call getWriteableDatabase() multiple times.
+            SQLiteDatabase db = getWritableDatabase();
+            long userId = -1;
+
+            db.beginTransaction();
+            try {
+                ContentValues values = new ContentValues();
+                values.put(KEY_USER_NAME, user.userName);
+                values.put(KEY_USER_PROFILE_PICTURE_URL, user.profilePictureUrl);
+
+                // First try to update the user in case the user already exists in the database
+                // This assumes userNames are unique
+                int rows = db.update(TABLE_USERS, values, KEY_USER_NAME + "= ?", new String[]{user.userName});
+
+                // Check if update succeeded
+                if (rows == 1) {
+                    // Get the primary key of the user we just updated
+                    String usersSelectQuery = String.format("SELECT %s FROM %s WHERE %s = ?",
+                            KEY_USER_ID, TABLE_USERS, KEY_USER_NAME);
+                    Cursor cursor = db.rawQuery(usersSelectQuery, new String[]{String.valueOf(user.userName)});
+                    try {
+                        if (cursor.moveToFirst()) {
+                            userId = cursor.getInt(0);
+                            db.setTransactionSuccessful();
+                        }
+                    } finally {
+                        if (cursor != null && !cursor.isClosed()) {
+                            cursor.close();
+                        }
+                    }
+                } else {
+                    // user with this userName did not already exist, so insert new user
+                    userId = db.insertOrThrow(TABLE_USERS, null, values);
+                    db.setTransactionSuccessful();
+                }
+            } catch (Exception e) {
+                Log.d(Tag, "Error while trying to add or update user");
+            } finally {
+                db.endTransaction();
+            }
+            return userId;
+        }
+
+        // Get all posts in the database
+        public List<Post> getAllPosts() {
+            List<Post> posts = new ArrayList<>();
+
+            // SELECT * FROM POSTS
+            // LEFT OUTER JOIN USERS
+            // ON POSTS.KEY_POST_USER_ID_FK = USERS.KEY_USER_ID
+            String POSTS_SELECT_QUERY =
+                    String.format("SELECT * FROM %s LEFT OUTER JOIN %s ON %s.%s = %s.%s",
+                            TABLE_POSTS,
+                            TABLE_USERS,
+                            TABLE_POSTS, KEY_POST_USER_ID_FK,
+                            TABLE_USERS, KEY_USER_ID);
+
+            // "getReadableDatabase()" and "getWriteableDatabase()" return the same object (except under low
+            // disk space scenarios)
+            SQLiteDatabase db = getReadableDatabase();
+            Cursor cursor = db.rawQuery(POSTS_SELECT_QUERY, null);
+            try {
+                if (cursor.moveToFirst()) {
+                    do {
+                        User newUser = new User();
+                        newUser.userName = cursor.getString(cursor.getColumnIndex(KEY_USER_NAME));
+                        newUser.profilePictureUrl = cursor.getString(cursor.getColumnIndex(KEY_USER_PROFILE_PICTURE_URL));
+
+                        Post newPost = new Post();
+                        newPost.text = cursor.getString(cursor.getColumnIndex(KEY_POST_TEXT));
+                        newPost.user = newUser;
+                        posts.add(newPost);
+                    } while (cursor.moveToNext());
+                }
+            } catch (Exception e) {
+                Log.d(Tag, "Error while trying to get posts from database");
+            } finally {
+                if (cursor != null && !cursor.isClosed()) {
+                    cursor.close();
+                }
+            }
+            return posts;
+        }
+
+        // Get all posts in the database
+        public List<Post> getAllPosts() {
+            List<Post> posts = new ArrayList<>();
+
+            // SELECT * FROM POSTS
+            // LEFT OUTER JOIN USERS
+            // ON POSTS.KEY_POST_USER_ID_FK = USERS.KEY_USER_ID
+            String POSTS_SELECT_QUERY =
+                    String.format("SELECT * FROM %s LEFT OUTER JOIN %s ON %s.%s = %s.%s",
+                            TABLE_POSTS,
+                            TABLE_USERS,
+                            TABLE_POSTS, KEY_POST_USER_ID_FK,
+                            TABLE_USERS, KEY_USER_ID);
+
+            // "getReadableDatabase()" and "getWriteableDatabase()" return the same object (except under low
+            // disk space scenarios)
+            SQLiteDatabase db = getReadableDatabase();
+            Cursor cursor = db.rawQuery(POSTS_SELECT_QUERY, null);
+            try {
+                if (cursor.moveToFirst()) {
+                    do {
+                        User newUser = new User();
+                        newUser.userName = cursor.getString(cursor.getColumnIndex(KEY_USER_NAME));
+                        newUser.profilePictureUrl = cursor.getString(cursor.getColumnIndex(KEY_USER_PROFILE_PICTURE_URL));
+
+                        Post newPost = new Post();
+                        newPost.text = cursor.getString(cursor.getColumnIndex(KEY_POST_TEXT));
+                        newPost.user = newUser;
+                        posts.add(newPost);
+                    } while (cursor.moveToNext());
+                }
+            } catch (Exception e) {
+                Log.d(Tag, "Error while trying to get posts from database");
+            } finally {
+                if (cursor != null && !cursor.isClosed()) {
+                    cursor.close();
+                }
+            }
+            return posts;
+        }
+
+        // Update the user's profile picture url
+        public int updateUserProfilePicture(User user) {
+            SQLiteDatabase db = this.getWritableDatabase();
+
+            ContentValues values = new ContentValues();
+            values.put(KEY_USER_PROFILE_PICTURE_URL, user.profilePictureUrl);
+
+            // Updating profile picture url for user with that userName
+            return db.update(TABLE_USERS, values, KEY_USER_NAME + " = ?",
+                    new String[]{String.valueOf(user.userName)});
+        }
+
+        // Delete all posts and users in the database
+        public void deleteAllPostsAndUsers() {
+            SQLiteDatabase db = getWritableDatabase();
+            db.beginTransaction();
+            try {
+                // Order of deletions is important when foreign key relationships exist.
+                db.delete(TABLE_POSTS, null, null);
+                db.delete(TABLE_USERS, null, null);
+                db.setTransactionSuccessful();
+            } catch (Exception e) {
+                Log.d(Tag, "Error while trying to delete all posts and users");
+            } finally {
+                db.endTransaction();
+            }
+        }
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 }
