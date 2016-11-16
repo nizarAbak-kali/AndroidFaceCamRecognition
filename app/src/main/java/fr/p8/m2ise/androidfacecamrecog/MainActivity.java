@@ -11,7 +11,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String IMAGEVIEW_VISIBILITY_STORAGE_KEY = "imageviewvisibility";
     private ImageView mImageView;
     private Bitmap mImageBitmap;
+    private Button addBtn;
+    private EditText editTextName;
 
     private static final String JPEG_FILE_PREFIX = "IMG_";
     private static final String JPEG_FILE_SUFFIX = ".jpg";
@@ -47,6 +51,20 @@ public class MainActivity extends AppCompatActivity {
 	    	MediaStore.ACTION_IMAGE_CAPTURE
         * */
 
+        addBtn = (Button) findViewById(R.id.buttonAdd);
+        editTextName = (EditText) findViewById(R.id.editTextNom);
+
+        addBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String name = editTextName.getText().toString();
+                if (name != null && name == "") {
+                    // save photo in DATABASE 
+                } else {
+                    Toast.makeText(MainActivity.this, "rien dans le nom", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         picBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -113,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
             if (storageDir != null) {
                 if (!storageDir.mkdirs()) {
                     if (!storageDir.exists()) {
-                        Log.d("CameraSample", "failed to create directory");
+                        Log.d("getAlbumDir", "failed to create directory");
                         return null;
                     }
                 }
@@ -163,6 +181,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         startActivityForResult(takePictureIntent, actionCode);
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            Log.e("OnActivityResult", "Recup du Bundel");
+            handleBigCameraPhoto();
+        }
     }
 
     private void galleryAddPic() {

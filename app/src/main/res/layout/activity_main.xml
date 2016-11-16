@@ -16,14 +16,35 @@
             android:layout_width="0dp"
             android:layout_weight="1" />
 
-
     </LinearLayout>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:text="Entrez nom ...."
+        android:ems="10"
+        android:id="@+id/editTextNom" />
 
     <ImageView
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:visibility="visible"
         android:id="@+id/imageView1" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent">
+        >
+
+        <Button
+            android:text="Ajouter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:id="@+id/buttonAdd" />
+    </LinearLayout>
 
 </LinearLayout>
 
