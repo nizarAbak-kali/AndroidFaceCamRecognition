@@ -15,7 +15,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -59,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String name = editTextName.getText().toString();
                 if (name != null && name == "") {
-                    // save photo in DATABASE 
+                    // save photo in DATABASE
                 } else {
                     Toast.makeText(MainActivity.this, "rien dans le nom", Toast.LENGTH_SHORT).show();
                 }
@@ -163,6 +165,18 @@ public class MainActivity extends AppCompatActivity {
         return f;
     }
 
+    public void insertImageInDB() throws IOException {
+        File f = createImageFile();
+        Bitmap bmp = BitmapFactory.decodeStream(new FileInputStream(f.getName()), null, null);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        byte[] byteArray = stream.toByteArray();
+
+        HistoryActivity.PostsDatabaseHelper db = new HistoryActivity.PostsDatabaseHelper(this);
+        db.insertImage(byteArray);
+
+    }
+
 
     private void dispatchTakePictureIntent(int actionCode) {
 
@@ -207,5 +221,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
 
 }

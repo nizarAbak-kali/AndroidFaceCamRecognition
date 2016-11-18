@@ -1,7 +1,9 @@
 package fr.p8.m2ise.androidfacecamrecog;
+
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
@@ -9,6 +11,7 @@ public class HistoryActivity extends AppCompatActivity {
 
 
     public static class PostsDatabaseHelper extends SQLiteOpenHelper {
+
         // Database Info
         private static final String DATABASE_NAME = "postsDatabase";
         private static final int DATABASE_VERSION = 1;
@@ -68,7 +71,7 @@ public class HistoryActivity extends AppCompatActivity {
                     "(" +
                     KEY_USER_ID + " INTEGER PRIMARY KEY," +
                     KEY_USER_NAME + " TEXT," +
-                    KEY_USER_PROFILE_PICTURE_URL + " TEXT" +
+                    KEY_USER_PROFILE_PICTURE_URL + " BLOB" +
                     ")";
             db.execSQL(CREATE_POSTS_TABLE);
             db.execSQL(CREATE_USERS_TABLE);
@@ -85,6 +88,29 @@ public class HistoryActivity extends AppCompatActivity {
                 db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
                 onCreate(db);
             }
+        }
+
+        public void insertImage(byte[] byteArray) {
+            SQLiteDatabase db = getWritableDatabase();
+            db.beginTransaction();
+            try {
+
+                String sql = "INSERT INTO users (" + KEY_USER_PROFILE_PICTURE_URL + ") VALUES(?);";
+
+                SQLiteStatement insertStmt = db.compileStatement(sql);
+                insertStmt.clearBindings();
+                insertStmt.bindBlob(1, byteArray);
+                insertStmt.executeInsert();
+
+                db.setTransactionSuccessful();
+                db.endTransaction();
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+
+            }
+
         }
     }
 
