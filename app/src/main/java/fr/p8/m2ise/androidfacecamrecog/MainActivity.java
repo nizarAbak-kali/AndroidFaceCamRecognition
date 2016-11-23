@@ -1,6 +1,7 @@
 package fr.p8.m2ise.androidfacecamrecog;
 
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -15,10 +16,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -30,6 +30,9 @@ public class MainActivity extends AppCompatActivity {
     private Bitmap mImageBitmap;
     private Button addBtn;
     private EditText editTextName;
+    User user;
+    PostsDatabaseHelper Mydb;
+    SQLiteDatabase db;
 
     private static final String JPEG_FILE_PREFIX = "IMG_";
     private static final String JPEG_FILE_SUFFIX = ".jpg";
@@ -42,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Mydb = new PostsDatabaseHelper(this);
 
         mImageView = (ImageView) findViewById(R.id.imageView1);
         mImageBitmap = null;
@@ -56,15 +60,28 @@ public class MainActivity extends AppCompatActivity {
         addBtn = (Button) findViewById(R.id.buttonAdd);
         editTextName = (EditText) findViewById(R.id.editTextNom);
 
+
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String name = editTextName.getText().toString();
+                byte[] image = null;
+                if (mImageBitmap != null) {
+                    int size = mImageBitmap.getRowBytes() * mImageBitmap.getHeight();
+                    ByteBuffer byteBuffer = ByteBuffer.allocate(size);
+                    mImageBitmap.copyPixelsToBuffer(byteBuffer);
+                    image = byteBuffer.array();
+                }
                 if (name != null && name == "") {
+
+                    User user1 = new User(name, image);
                     // save photo in DATABASE
+                    // save mimageBitmap
+                    Mydb.addUser(user1);
                 } else {
                     Toast.makeText(MainActivity.this, "rien dans le nom", Toast.LENGTH_SHORT).show();
                 }
+
             }
         });
 
@@ -117,8 +134,8 @@ public class MainActivity extends AppCompatActivity {
 
 		/* Decode the JPEG file into a Bitmap */
         Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-
-		/* Associate the Bitmap to the ImageView */
+        this.mImageBitmap = bitmap;
+        /* Associate the Bitmap to the ImageView */
         mImageView.setImageBitmap(bitmap);
         mImageView.setVisibility(View.VISIBLE);
     }
@@ -165,17 +182,16 @@ public class MainActivity extends AppCompatActivity {
         return f;
     }
 
-    public void insertImageInDB() throws IOException {
+    /** public void insertImageInDB() throws IOException {
         File f = createImageFile();
         Bitmap bmp = BitmapFactory.decodeStream(new FileInputStream(f.getName()), null, null);
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.JPEG, 100, stream);
         byte[] byteArray = stream.toByteArray();
-
         HistoryActivity.PostsDatabaseHelper db = new HistoryActivity.PostsDatabaseHelper(this);
         db.insertImage(byteArray);
 
-    }
+     }**/
 
 
     private void dispatchTakePictureIntent(int actionCode) {
