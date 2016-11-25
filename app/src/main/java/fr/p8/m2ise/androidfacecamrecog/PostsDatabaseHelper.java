@@ -11,18 +11,13 @@ import android.util.Log;
  */
 
 public class PostsDatabaseHelper extends SQLiteOpenHelper {
+
     // Database Info
     private static final String DATABASE_NAME = "postsDatabase";
     private static final int DATABASE_VERSION = 1;
 
     // Table Names
-    private static final String TABLE_POSTS = "posts";
     private static final String TABLE_USERS = "users";
-
-    // Post Table Columns
-    private static final String KEY_POST_ID = "id";
-    private static final String KEY_POST_USER_ID_FK = "userId";
-    private static final String KEY_POST_TEXT = "text";
 
     // User Table Columns
     private static final String KEY_USER_ID = "id";
@@ -92,7 +87,7 @@ public class PostsDatabaseHelper extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put(KEY_USER_ID, user.userName);
-        values.put(KEY_USER_NAME, user.Picture);
+        values.put(KEY_USER_PROFILE_PICTURE_URL, user.Picture);
         db.insert(TABLE_USERS, null, values);
         db.close();
     }
@@ -100,7 +95,7 @@ public class PostsDatabaseHelper extends SQLiteOpenHelper {
     public int updateContact(User user) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(KEY_POST_ID, user.userName);
+        values.put(KEY_USER_ID, user.userName);
         values.put(KEY_USER_PROFILE_PICTURE_URL, user.Picture);
         String s = KEY_USER_NAME;
         int i = db.update(TABLE_USERS, values, s += " = ?", new String[]{user.userName});

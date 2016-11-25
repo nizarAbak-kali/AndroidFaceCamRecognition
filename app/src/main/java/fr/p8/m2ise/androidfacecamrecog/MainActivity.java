@@ -67,9 +67,16 @@ public class MainActivity extends AppCompatActivity {
                 String name = editTextName.getText().toString();
                 byte[] image = null;
                 if (mImageBitmap != null) {
-                    int size = mImageBitmap.getRowBytes() * mImageBitmap.getHeight();
-                    ByteBuffer byteBuffer = ByteBuffer.allocate(size);
+
+                    int size = mImageBitmap.getWidth() * mImageBitmap.getHeight();
+                    size = mImageBitmap.getByteCount();
+                    Log.e("Onclick", "size : " + size);
+                    ByteBuffer byteBuffer = ByteBuffer.allocate(2 * size);
                     mImageBitmap.copyPixelsToBuffer(byteBuffer);
+
+                    Log.e("Onclick", "byteBuffer : " + byteBuffer.toString());
+                    mImageBitmap.copyPixelsToBuffer(byteBuffer);
+                    Log.e("Onclick", "size : " + size);
                     image = byteBuffer.array();
                 }
                 if (name != null && name == "") {
@@ -121,11 +128,18 @@ public class MainActivity extends AppCompatActivity {
         int photoW = bmOptions.outWidth;
         int photoH = bmOptions.outHeight;
 
-		/* Figure out which way needs to be reduced less */
+       	/* Figure out which way needs to be reduced less */
         int scaleFactor = 1;
+        int inSampleSize = 1;
         if ((targetW > 0) || (targetH > 0)) {
-            scaleFactor = Math.min(photoW / targetW, photoH / targetH);
+            while ((targetH / inSampleSize) > 0
+                    && (targetW / inSampleSize) > 0) {
+                inSampleSize *= 2;
+
+                scaleFactor = Math.min(photoW / targetW, photoH / targetH);
+            }
         }
+
 
 		/* Set bitmap options to scale the image decode target */
         bmOptions.inJustDecodeBounds = false;
