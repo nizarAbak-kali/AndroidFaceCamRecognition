@@ -62,8 +62,6 @@ public class PostsDatabaseHelper extends SQLiteOpenHelper {
                 KEY_USER_PROFILE_PICTURE_URL + " BLOB" +
                 ")";
         db.execSQL(CREATE_USERS_TABLE);
-
-
     }
 
     // Called when the database needs to be upgraded.
