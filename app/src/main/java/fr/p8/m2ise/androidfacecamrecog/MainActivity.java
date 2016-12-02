@@ -3,10 +3,7 @@ package fr.p8.m2ise.androidfacecamrecog;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -16,27 +13,30 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
     private static final int ACTION_TAKE_PHOTO_B = 1;
     private static final String BITMAP_STORAGE_KEY = "viewbitmap";
     private static final String IMAGEVIEW_VISIBILITY_STORAGE_KEY = "imageviewvisibility";
+    // AFFICHAGE DE L'iMAGE CAPTUREE
     private ImageView mImageView;
+    // CONTIENT L'IMAGE
     private Bitmap mImageBitmap;
+    // BOUTTON POUR AJOUTER UN USER à la BD
     private Button addBtn;
+    // BOUTTON POUR PRENDRE UNE PHOTO
+    private Button picBtn;
+    // CHAMPS DE TEXTE POUR ECRIRE LE NOM DU USER
     private EditText editTextName;
+    // BD PART
     User user;
     PostsDatabaseHelper Mydb;
     SQLiteDatabase db;
-
+    // POUR LA SAUVEAGRDE PHYSIQUE D'UNE IMAGE
     private static final String JPEG_FILE_PREFIX = "IMG_";
     private static final String JPEG_FILE_SUFFIX = ".jpg";
-
+    // CHEMIN DE L'IMAGE
     private String mCurrentPhotoPath;
     private AlbumStorageDirFactory mAlbumStorageDirFactory = null;
 
@@ -44,49 +44,37 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // VIEW PRINCIPALE
         setContentView(R.layout.activity_main);
-        Mydb = new PostsDatabaseHelper(this);
-
         mImageView = (ImageView) findViewById(R.id.imageView1);
         mImageBitmap = null;
-
-        Button picBtn = (Button) findViewById(R.id.btnIntend);
-        /*
-        * picBtn,
-		    mTakePicOnClickListener,
-	    	MediaStore.ACTION_IMAGE_CAPTURE
-        * */
-
+        picBtn = (Button) findViewById(R.id.btnIntend);
         addBtn = (Button) findViewById(R.id.buttonAdd);
         editTextName = (EditText) findViewById(R.id.editTextNom);
+
+        // INITIALISATION DU HELPER  POUR LA BD
+        Mydb = new PostsDatabaseHelper(this);
 
 
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String name = editTextName.getText().toString();
-                byte[] image = null;
-                if (mImageBitmap != null) {
+                // DANS LE CAS OU LE NOM EST REMPLIE
+                if (name != null && name != "" && mImageBitmap != null) {
+                    // BITMAP -> BYTE[]
+                    int imagebytesize = mImageBitmap.getByteCount();
+                    ByteBuffer buffer = ByteBuffer.allocate(imagebytesize);
+                    mImageBitmap.copyPixelsToBuffer(buffer);
+                    byte[] image = buffer.array();
 
-                    int size = mImageBitmap.getWidth() * mImageBitmap.getHeight();
-                    size = mImageBitmap.getByteCount();
-                    Log.e("Onclick", "size : " + size);
-                    ByteBuffer byteBuffer = ByteBuffer.allocate(2 * size);
-                    mImageBitmap.copyPixelsToBuffer(byteBuffer);
-
-                    Log.e("Onclick", "byteBuffer : " + byteBuffer.toString());
-                    mImageBitmap.copyPixelsToBuffer(byteBuffer);
-                    Log.e("Onclick", "size : " + size);
-                    image = byteBuffer.array();
-                }
-                if (name != null && name == "") {
-
+                    // CREATION DU USER
                     User user1 = new User(name, image);
+
                     // save photo in DATABASE
-                    // save mimageBitmap
                     Mydb.addUser(user1);
                 } else {
-                    Toast.makeText(MainActivity.this, "rien dans le nom", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "rien dans le nom ou rien dans l'image", Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -95,162 +83,27 @@ public class MainActivity extends AppCompatActivity {
         picBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dispatchTakePictureIntent(ACTION_TAKE_PHOTO_B);
-
+                // creation de l'appelle avec pour action de capturer une image depuis la camera
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                // start camera for activity
+                startActivityForResult(intent, ACTION_TAKE_PHOTO_B);
             }
         });
 
         picBtn.setClickable(true);
 
-        mAlbumStorageDirFactory = new BaseAlbumDirFactory();
 
 
-    }
-
-
-    private String getAlbumName() {
-        return getString(R.string.album_name);
-    }
-
-    private void setPic() {
-
-		/* There isn't enough memory to open up more than a couple camera photos */
-        /* So pre-scale the target bitmap into which the file is decoded */
-
-		/* Get the size of the ImageView */
-        int targetW = mImageView.getWidth();
-        int targetH = mImageView.getHeight();
-
-		/* Get the size of the image */
-        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-        bmOptions.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-        int photoW = bmOptions.outWidth;
-        int photoH = bmOptions.outHeight;
-
-       	/* Figure out which way needs to be reduced less */
-        int scaleFactor = 1;
-        int inSampleSize = 1;
-        if ((targetW > 0) || (targetH > 0)) {
-            while ((targetH / inSampleSize) > 0
-                    && (targetW / inSampleSize) > 0) {
-                inSampleSize *= 2;
-
-                scaleFactor = Math.min(photoW / targetW, photoH / targetH);
-            }
-        }
-
-
-		/* Set bitmap options to scale the image decode target */
-        bmOptions.inJustDecodeBounds = false;
-        bmOptions.inSampleSize = scaleFactor;
-        bmOptions.inPurgeable = true;
-
-		/* Decode the JPEG file into a Bitmap */
-        Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-        this.mImageBitmap = bitmap;
-        /* Associate the Bitmap to the ImageView */
-        mImageView.setImageBitmap(bitmap);
-        mImageView.setVisibility(View.VISIBLE);
-    }
-
-    private File getAlbumDir() {
-        File storageDir = null;
-
-        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-
-            storageDir = mAlbumStorageDirFactory.getAlbumStorageDir(getAlbumName());
-
-            if (storageDir != null) {
-                if (!storageDir.mkdirs()) {
-                    if (!storageDir.exists()) {
-                        Log.d("getAlbumDir", "failed to create directory");
-                        return null;
-                    }
-                }
-            }
-
-        } else {
-            Log.v(getString(R.string.app_name), "External storage is not mounted READ/WRITE.");
-        }
-
-        return storageDir;
-    }
-
-
-    private File createImageFile() throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = JPEG_FILE_PREFIX + timeStamp + "_";
-        File albumF = getAlbumDir();
-        File imageF = File.createTempFile(imageFileName, JPEG_FILE_SUFFIX, albumF);
-        return imageF;
-    }
-
-
-    private File setUpPhotoFile() throws IOException {
-
-        File f = createImageFile();
-        mCurrentPhotoPath = f.getAbsolutePath();
-
-        return f;
-    }
-
-    /** public void insertImageInDB() throws IOException {
-        File f = createImageFile();
-        Bitmap bmp = BitmapFactory.decodeStream(new FileInputStream(f.getName()), null, null);
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-        byte[] byteArray = stream.toByteArray();
-        HistoryActivity.PostsDatabaseHelper db = new HistoryActivity.PostsDatabaseHelper(this);
-        db.insertImage(byteArray);
-
-     }**/
-
-
-    private void dispatchTakePictureIntent(int actionCode) {
-
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-        File f = null;
-
-        try {
-            f = setUpPhotoFile();
-            mCurrentPhotoPath = f.getAbsolutePath();
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
-        } catch (IOException e) {
-            e.printStackTrace();
-            f = null;
-            mCurrentPhotoPath = null;
-        }
-
-        startActivityForResult(takePictureIntent, actionCode);
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_OK) {
+        if (requestCode == ACTION_TAKE_PHOTO_B && resultCode == RESULT_OK && data != null) {
             Log.e("OnActivityResult", "Recup du Bundel");
-            handleBigCameraPhoto();
+            Bundle extras = data.getExtras();
+
+            mImageBitmap = (Bitmap) extras.get("data");
+            mImageView.setImageBitmap(mImageBitmap);
         }
     }
-
-    private void galleryAddPic() {
-        Intent mediaScanIntent = new Intent("android.intent.action.MEDIA_SCANNER_SCAN_FILE");
-        File f = new File(mCurrentPhotoPath);
-        Uri contentUri = Uri.fromFile(f);
-        mediaScanIntent.setData(contentUri);
-        this.sendBroadcast(mediaScanIntent);
-    }
-
-    private void handleBigCameraPhoto() {
-
-        if (mCurrentPhotoPath != null) {
-            setPic();
-            galleryAddPic();
-            mCurrentPhotoPath = null;
-        }
-
-    }
-
 
 }
