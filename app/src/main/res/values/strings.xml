@@ -2,5 +2,10 @@
     <string name="app_name">AndroidFaceCamRecog</string>
     <string name="album_name">facecamimages</string>
     <string name="btnIntend">Prendre une Photo</string>
+    <string name="description">
+        Binome : \n
+        ABAK-KALI Nizar abakkali.nizar@gmail.com\n
+        YEKTA Zhaleh yekta.jaleh@gmail.com\n
+    </string>
     <string name="btnIntendS" />
 </resources>
