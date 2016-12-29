@@ -15,7 +15,7 @@ buildscript {
 
 allprojects {
     // modif pour regler le problem de crunch
-    buildDir = "C:/tmp/${rootProject.name}/${project.name}"
+    buildDir = "/tmp/${rootProject.name}/${project.name}"
     repositories {
         jcenter()
     }

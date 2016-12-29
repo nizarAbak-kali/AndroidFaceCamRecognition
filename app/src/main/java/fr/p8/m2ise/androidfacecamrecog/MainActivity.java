@@ -42,7 +42,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String JPEG_FILE_SUFFIX = ".jpg";
     // CHEMIN DE L'IMAGE
     private String mCurrentPhotoPath;
-    private AlbumStorageDirFactory mAlbumStorageDirFactory = null;
 
     private StorageReference mStorageReference;
 
@@ -66,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         editTextName = (EditText) findViewById(R.id.editTextNom);
 
         // INITIALISATION DU HELPER  POUR LA BD
-        Mydb = new PostsDatabaseHelper(this);
+        // Mydb = new PostsDatabaseHelper(this);
 
 
         addBtn.setOnClickListener(new View.OnClickListener() {
