@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
         // INITIALISATION DU HELPER  POUR LA BD
         Mydb = new PostsDatabaseHelper(this);
 
-
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -91,8 +90,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         picBtn.setClickable(true);
-
-
 
     }
 
