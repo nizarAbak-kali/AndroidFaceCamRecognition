@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_menu"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="fr.p8.m2ise.androidfacecamrecog.MenuActivity">
+
+    <Button
+        android:text="ADD USER"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="116dp"
+        android:layout_marginStart="116dp"
+        android:layout_marginTop="47dp"
+        android:id="@+id/button_main"
+        android:layout_below="@+id/button_history"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:clickable="true"
+        android:onClick="onClick" />
+
+    <Button
+        android:text="HISTORY"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/button_history"
+        android:layout_alignParentTop="true"
+        android:layout_alignRight="@+id/button_main"
+        android:layout_alignEnd="@+id/button_main"
+        android:layout_marginTop="189dp"
+        android:clickable="true"
+        android:onClick="onClick" />
+
+    <TextView
+        android:text="IntelligentCam"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="56dp"
+        android:id="@+id/menu_apptitle"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="62dp"
+        android:layout_marginStart="62dp"
+        android:typeface="monospace"
+        android:textAppearance="@style/TextAppearance.AppCompat"
+        android:textSize="30sp"
+        android:textColor="@color/colorAccent" />
+
+    <Button
+        android:text="ABOUT"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:id="@+id/menu_aboutbutton"
+        android:clickable="true"
+        android:onClick="onClick" />
+
+    <Button
+        android:text="PARAMS"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/menu_parambutton"
+        android:clickable="true"
+        android:onClick="onClick" />
+
+</RelativeLayout>

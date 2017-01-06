@@ -13,6 +13,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 
 public class MainActivity extends AppCompatActivity {
@@ -38,12 +42,20 @@ public class MainActivity extends AppCompatActivity {
     private static final String JPEG_FILE_SUFFIX = ".jpg";
     // CHEMIN DE L'IMAGE
     private String mCurrentPhotoPath;
-    private AlbumStorageDirFactory mAlbumStorageDirFactory = null;
+
+    private StorageReference mStorageReference;
+
+    static int numfaces;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // init pour FIREBASE
+        mStorageReference = FirebaseStorage.getInstance().getReference();
+        numfaces = 0;
+
+
         // VIEW PRINCIPALE
         setContentView(R.layout.activity_main);
         mImageView = (ImageView) findViewById(R.id.imageView1);
@@ -53,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         editTextName = (EditText) findViewById(R.id.editTextNom);
 
         // INITIALISATION DU HELPER  POUR LA BD
-        Mydb = new PostsDatabaseHelper(this);
+        // Mydb = new PostsDatabaseHelper(this);
 
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,13 +77,17 @@ public class MainActivity extends AppCompatActivity {
                     int imagebytesize = mImageBitmap.getByteCount();
                     ByteBuffer buffer = ByteBuffer.allocate(imagebytesize);
                     mImageBitmap.copyPixelsToBuffer(buffer);
-                    byte[] image = buffer.array();
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    mImageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
 
-                    // CREATION DU USER
-                    User user1 = new User(name, image);
 
-                    // save photo in DATABASE
-                    Mydb.addUser(user1);
+                    //byte[] image = buffer.array();
+                    byte[] image = baos.toByteArray();
+
+                    StorageReference imagesChild = mStorageReference.child("face_" + name + numfaces++);
+                    // save images in FireBase
+                    imagesChild.putBytes(image);
+
                 } else {
                     Toast.makeText(MainActivity.this, "rien dans le nom ou rien dans l'image", Toast.LENGTH_SHORT).show();
                 }
@@ -92,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
         picBtn.setClickable(true);
 
     }
+
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == ACTION_TAKE_PHOTO_B && resultCode == RESULT_OK && data != null) {

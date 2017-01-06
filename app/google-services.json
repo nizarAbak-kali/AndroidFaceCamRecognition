@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "868288172251",
+    "firebase_url": "https://intelligentcam-90d8f.firebaseio.com",
+    "project_id": "intelligentcam-90d8f",
+    "storage_bucket": "intelligentcam-90d8f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:868288172251:android:615f125254cde8f6",
+        "android_client_info": {
+          "package_name": "fr.p8.m2ise.androidfacecamrecog"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "868288172251-oovbj8ckklqss2f7emdotfv1me94gjin.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "fr.p8.m2ise.androidfacecamrecog",
+            "certificate_hash": "615AA52D8BE40E5ED2C4156EC2DEAB54C0F79EF9"
+          }
+        },
+        {
+          "client_id": "868288172251-svfni76pieo9hsc4brpv4tshnfqiludm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "fr.p8.m2ise.androidfacecamrecog",
+            "certificate_hash": "B74F39002A171F34145C564201643B2529E69379"
+          }
+        },
+        {
+          "client_id": "868288172251-nnc27s9nn8urf3h6atcor30j7pq791fp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClpT-LpBup_hGyUlT4enu0AKXJvQPeti8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "868288172251-nnc27s9nn8urf3h6atcor30j7pq791fp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
